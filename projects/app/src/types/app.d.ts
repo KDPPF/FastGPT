@@ -14,6 +14,10 @@ import type { ChatSchema } from '@fastgpt/global/core/chat/type';
 import type { AppSchema } from '@fastgpt/global/core/app/type';
 import { ChatModelType } from '@/constants/model';
 
+import {
+  QAPairsUseForQAEnum,
+  QAPairsQASourceEnum
+} from '@/pages/app/detail/components/QAPairs/context.tsx';
 export interface ShareAppItem {
   _id: string;
   avatar: string;
@@ -43,4 +47,15 @@ export type AppLogsListItemType = {
   userBadFeedbackCount: number;
   customFeedbacksCount: number;
   markCount: number;
+};
+
+export type AppQAPairsListItemType = {
+  id: number;
+  app_id: string;
+  questions: string[];
+  answer: string;
+  qa_source: QAPairsQASourceEnum;
+  use_for_qa: QAPairsUseForQAEnum;
+  update_user: string;
+  update_time: string;
 };

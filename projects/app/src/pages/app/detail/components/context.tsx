@@ -22,7 +22,8 @@ const TagsEditModal = dynamic(() => import('./TagsEditModal'));
 export enum TabEnum {
   'appEdit' = 'appEdit',
   'publish' = 'publish',
-  'logs' = 'logs'
+  'logs' = 'logs',
+  'QAPairs' = 'QAPairs'
 }
 
 type AppContextType = {

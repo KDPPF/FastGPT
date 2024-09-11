@@ -10,6 +10,11 @@ export type GetChatSpeechProps = {
 };
 
 /* ---------- chat ----------- */
+export type InitQAPairsProps = {
+  appId?: string;
+  id?: number;
+  loadCustomFeedbacks?: boolean;
+};
 export type InitChatProps = {
   appId?: string;
   chatId?: string;

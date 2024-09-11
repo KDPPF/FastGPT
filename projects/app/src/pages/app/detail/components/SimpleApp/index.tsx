@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getDefaultAppForm } from '@fastgpt/global/core/app/utils';
-
+import Loading from '@fastgpt/web/components/common/MyLoading';
 import Header from './Header';
 import Edit from './Edit';
 import { useContextSelector } from 'use-context-selector';
@@ -12,6 +12,7 @@ import { useTranslation } from 'next-i18next';
 
 const Logs = dynamic(() => import('../Logs/index'));
 const PublishChannel = dynamic(() => import('../Publish'));
+const QAPairs = dynamic(() => import('../QAPairs'));
 
 const SimpleEdit = () => {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ const SimpleEdit = () => {
         <Flex h={'100%'} flexDirection={'column'} mt={4}>
           {currentTab === TabEnum.publish && <PublishChannel />}
           {currentTab === TabEnum.logs && <Logs />}
+          {currentTab === TabEnum.QAPairs && <QAPairs />}
         </Flex>
       )}
     </Flex>

@@ -19,7 +19,8 @@ export enum TabEnum {
   collectionCard = 'collectionCard',
   test = 'test',
   info = 'info',
-  import = 'import'
+  import = 'import',
+  QAPairsCard = 'QAPairsCard'
 }
 
 const Slider = ({ currentTab }: { currentTab: TabEnum }) => {
@@ -38,6 +39,11 @@ const Slider = ({ currentTab }: { currentTab: TabEnum }) => {
       value: TabEnum.collectionCard,
       icon: 'common/overviewLight'
     },
+    // {
+    //   label: '问答对',
+    //   value: TabEnum.QAPairsCard,
+    //   icon: 'common/overviewLight'
+    // },
     { label: t('common:core.dataset.test.Search Test'), value: TabEnum.test, icon: 'kbTest' },
     ...(datasetDetail.permission.hasManagePer
       ? [{ label: t('common:common.Config'), value: TabEnum.info, icon: 'common/settingLight' }]

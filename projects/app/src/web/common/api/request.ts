@@ -16,6 +16,7 @@ interface ConfigType {
   cancelToken?: AbortController;
   maxQuantity?: number; // The maximum number of simultaneous requests, usually used to cancel old requests
   withCredentials?: boolean;
+  baseURL?: string;
 }
 interface ResponseDataType {
   code: number;

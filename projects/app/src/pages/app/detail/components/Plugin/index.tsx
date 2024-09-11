@@ -16,6 +16,7 @@ import Flow from '../WorkflowComponents/Flow';
 import { t } from 'i18next';
 const Logs = dynamic(() => import('../Logs/index'));
 const PublishChannel = dynamic(() => import('../Publish'));
+const QAPairs = dynamic(() => import('../QAPairs'));
 
 const WorkflowEdit = () => {
   const { appDetail, currentTab } = useContextSelector(AppContext, (e) => e);
@@ -53,6 +54,7 @@ const WorkflowEdit = () => {
         <Flex flexDirection={'column'} h={'100%'} px={4} pb={4}>
           {currentTab === TabEnum.publish && <PublishChannel />}
           {currentTab === TabEnum.logs && <Logs />}
+          {currentTab === TabEnum.QAPairs && <QAPairs />}
         </Flex>
       )}
 

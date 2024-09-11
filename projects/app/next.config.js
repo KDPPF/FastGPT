@@ -10,6 +10,14 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: isDev ? false : true,
   compress: true,
+  async rewrites() {
+    return [
+      {
+        source: '/qa_api/:path*',
+        destination: `http://10.28.128.37:8080/:path*`
+      }
+    ];
+  },
   webpack(config, { isServer, nextRuntime }) {
     Object.assign(config.resolve.alias, {
       '@mongodb-js/zstd': false,

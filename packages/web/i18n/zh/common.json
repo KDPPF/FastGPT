@@ -539,6 +539,7 @@
       }
     },
     "dataset": {
+      "testList": "测试列表",
       "All Dataset": "全部知识库",
       "Avatar": "知识库头像",
       "Choose Dataset": "关联知识库",

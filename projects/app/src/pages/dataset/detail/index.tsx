@@ -16,11 +16,13 @@ import {
   DatasetPageContextProvider
 } from '@/web/core/dataset/context/datasetPageContext';
 import CollectionPageContextProvider from './components/CollectionCard/Context';
+import QAPairsPageContextProvider from './components/QAPairsCard/Context';
 import { useContextSelector } from 'use-context-selector';
 import NextHead from '@/components/common/NextHead';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 
 const CollectionCard = dynamic(() => import('./components/CollectionCard/index'));
+const QAPairsCard = dynamic(() => import('./components/QAPairsCard/index'));
 const DataCard = dynamic(() => import('./components/DataCard'));
 const Test = dynamic(() => import('./components/Test'));
 const Info = dynamic(() => import('./components/Info'));
@@ -31,7 +33,8 @@ export enum TabEnum {
   collectionCard = 'collectionCard',
   test = 'test',
   info = 'info',
-  import = 'import'
+  import = 'import',
+  QAPairsCard = 'QAPairsCard'
 }
 type Props = { datasetId: string; currentTab: TabEnum };
 
@@ -70,6 +73,11 @@ const Detail = ({ datasetId, currentTab }: Props) => {
                 <CollectionPageContextProvider>
                   <CollectionCard />
                 </CollectionPageContextProvider>
+              )}
+              {currentTab === TabEnum.QAPairsCard && (
+                <QAPairsPageContextProvider>
+                  <QAPairsCard />
+                </QAPairsPageContextProvider>
               )}
               {currentTab === TabEnum.dataCard && <DataCard />}
               {currentTab === TabEnum.test && <Test datasetId={datasetId} />}
