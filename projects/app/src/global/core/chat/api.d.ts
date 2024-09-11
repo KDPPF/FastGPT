@@ -35,7 +35,7 @@ export type InitChatResponse = {
   chatId?: string;
   appId: string;
   userAvatar?: string;
-  title: string;
+  title?: string;
   variables: Record<string, any>;
   history: ChatItemType[];
   app: {

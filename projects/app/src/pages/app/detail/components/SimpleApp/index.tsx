@@ -6,7 +6,7 @@ import Edit from './Edit';
 import { useContextSelector } from 'use-context-selector';
 import { AppContext, TabEnum } from '../context';
 import dynamic from 'next/dynamic';
-import { Flex } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useBeforeunload } from '@fastgpt/web/hooks/useBeforeunload';
 import { useTranslation } from 'next-i18next';
 
@@ -30,11 +30,11 @@ const SimpleEdit = () => {
       {currentTab === TabEnum.appEdit ? (
         <Edit appForm={appForm} setAppForm={setAppForm} />
       ) : (
-        <Flex h={'100%'} flexDirection={'column'} mt={4}>
+        <Box flex={'1 0 0'} h={0} mt={4}>
           {currentTab === TabEnum.publish && <PublishChannel />}
           {currentTab === TabEnum.logs && <Logs />}
           {currentTab === TabEnum.QAPairs && <QAPairs />}
-        </Flex>
+        </Box>
       )}
     </Flex>
   );

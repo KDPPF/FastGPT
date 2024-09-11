@@ -15,7 +15,7 @@ const RouteTab = () => {
 
   const setCurrentTab = useCallback(
     (tab: TabEnum) => {
-      router.push({
+      router.replace({
         query: {
           ...router.query,
           currentTab: tab
@@ -42,7 +42,7 @@ const RouteTab = () => {
           ]
         : [])
     ],
-    [appDetail.permission.hasManagePer, appT]
+    [appDetail.permission.hasManagePer, appDetail.type, appT]
   );
 
   return (
