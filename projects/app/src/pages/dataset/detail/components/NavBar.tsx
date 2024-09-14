@@ -16,7 +16,8 @@ export enum TabEnum {
   collectionCard = 'collectionCard',
   test = 'test',
   info = 'info',
-  import = 'import'
+  import = 'import',
+  QAPairsCard = 'QAPairsCard'
 }
 
 const NavBar = ({ currentTab }: { currentTab: TabEnum }) => {
