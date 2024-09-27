@@ -162,10 +162,8 @@ const QAPairs = () => {
                   // title={t('common:core.view_chat_detail')}
                   // onClick={() => setDetailQAPairsId(item.id)}
                 >
-                  <Td>{item.questions[0]}</Td>
-                  <Td className="textEllipsis" maxW={'250px'}>
-                    {item.answer}
-                  </Td>
+                  <Td maxW={'250px'}>{item.questions[0]}</Td>
+                  <Td className="textEllipsis">{item.answer}</Td>
                   <Td>{QAPairsQASourceEnum[item.qa_source]}</Td>
                   <Td w={'100px'}>
                     <Switch
