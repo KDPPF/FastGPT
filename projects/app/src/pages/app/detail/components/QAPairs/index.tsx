@@ -163,7 +163,11 @@ const QAPairs = () => {
                   // onClick={() => setDetailQAPairsId(item.id)}
                 >
                   <Td maxW={'250px'}>{item.questions[0]}</Td>
-                  <Td className="textEllipsis">{item.answer}</Td>
+                  <Td maxW={'300px'}>
+                    <Box className="textEllipsis" maxW={'300px'}>
+                      {item.answer}
+                    </Box>
+                  </Td>
                   <Td>{QAPairsQASourceEnum[item.qa_source]}</Td>
                   <Td w={'100px'}>
                     <Switch
