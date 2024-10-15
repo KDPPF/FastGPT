@@ -163,12 +163,12 @@ const QAPairs = () => {
                   // onClick={() => setDetailQAPairsId(item.id)}
                 >
                   <Td maxW={'250px'}>{item.questions[0]}</Td>
-                  <Td maxW={'300px'}>
-                    <Box className="textEllipsis" maxW={'300px'}>
+                  <Td maxW={'300'}>
+                    <Box className="textEllipsis" overflow="hidden" maxW="100%">
                       {item.answer}
                     </Box>
                   </Td>
-                  <Td>{QAPairsQASourceEnum[item.qa_source]}</Td>
+                  <Td w={'100px'}>{QAPairsQASourceEnum[item.qa_source]}</Td>
                   <Td w={'100px'}>
                     <Switch
                       isChecked={item.use_for_qa === 1}
