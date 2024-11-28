@@ -5,16 +5,7 @@ import { cloneDeep } from 'lodash';
 import { WorkerNameEnum, runWorker } from '@fastgpt/service/worker/utils';
 
 // Run in main thread
-const staticPluginList = [
-  'getTime',
-  'fetchUrl',
-  'Doc2X',
-  'Doc2X/URLPDF2text',
-  'Doc2X/URLImg2text',
-  `Doc2X/FilePDF2text`,
-  `Doc2X/FileImg2text`,
-  'feishu'
-];
+const staticPluginList = ['getTime', 'fetchUrl', 'feishu', 'google', 'bing'];
 // Run in worker thread (Have npm packages)
 const packagePluginList = [
   'mathExprVal',
@@ -24,7 +15,11 @@ const packagePluginList = [
   'duckduckgo/searchNews',
   'duckduckgo/searchVideo',
   'drawing',
-  'drawing/baseChart'
+  'drawing/baseChart',
+  'wiki',
+  'databaseConnection',
+  'Doc2X',
+  'Doc2X/PDF2text'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];
@@ -51,6 +46,8 @@ export const getCommunityPlugins = () => {
 };
 
 export const getSystemPluginTemplates = () => {
+  if (!global.systemPlugins) return [];
+
   const oldPlugins = global.communityPlugins ?? [];
   return [...oldPlugins, ...cloneDeep(global.systemPlugins)];
 };
@@ -91,8 +88,4 @@ export const getCommunityCb = async () => {
     },
     {}
   );
-};
-
-export const getSystemPluginCb = async () => {
-  return global.systemPluginCb;
 };

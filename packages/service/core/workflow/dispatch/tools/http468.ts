@@ -14,10 +14,16 @@ import { SERVICE_LOCAL_HOST } from '../../../../common/system/tools';
 import { addLog } from '../../../../common/system/log';
 import { DispatchNodeResultType } from '@fastgpt/global/core/workflow/runtime/type';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import { textAdaptGptResponse } from '@fastgpt/global/core/workflow/runtime/utils';
-import { getSystemPluginCb } from '../../../../../plugins/register';
+import {
+  textAdaptGptResponse,
+  replaceEditorVariable
+} from '@fastgpt/global/core/workflow/runtime/utils';
 import { ContentTypes } from '@fastgpt/global/core/workflow/constants';
-import { replaceEditorVariable } from '@fastgpt/global/core/workflow/utils';
+import { uploadFileFromBase64Img } from '../../../../common/file/gridfs/controller';
+import { ReadFileBaseUrl } from '@fastgpt/global/common/file/constants';
+import { createFileToken } from '../../../../support/permission/controller';
+import { JSONPath } from 'jsonpath-plus';
+import type { SystemPluginSpecialResponse } from '../../../../../plugins/type';
 
 type PropsArrType = {
   key: string;
@@ -55,7 +61,7 @@ const contentTypeMap = {
 
 export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<HttpResponse> => {
   let {
-    runningAppInfo: { id: appId },
+    runningAppInfo: { id: appId, teamId, tmbId },
     chatId,
     responseChatItemId,
     variables,
@@ -202,9 +208,14 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
 
   try {
     const { formatResponse, rawResponse } = await (async () => {
-      const systemPluginCb = await getSystemPluginCb();
+      const systemPluginCb = global.systemPluginCb;
       if (systemPluginCb[httpReqUrl]) {
-        const pluginResult = await systemPluginCb[httpReqUrl](requestBody);
+        const pluginResult = await replaceSystemPluginResponse({
+          response: await systemPluginCb[httpReqUrl](requestBody),
+          teamId,
+          tmbId
+        });
+
         return {
           formatResponse: pluginResult,
           rawResponse: pluginResult
@@ -222,11 +233,34 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
 
     // format output value type
     const results: Record<string, any> = {};
-    for (const key in formatResponse) {
-      const output = node.outputs.find((item) => item.key === key);
-      if (!output) continue;
-      results[key] = valueTypeFormat(formatResponse[key], output.valueType);
-    }
+    node.outputs
+      .filter(
+        (item) =>
+          item.id !== NodeOutputKeyEnum.error &&
+          item.id !== NodeOutputKeyEnum.httpRawResponse &&
+          item.id !== NodeOutputKeyEnum.addOutputParam
+      )
+      .forEach((item) => {
+        const key = item.key.startsWith('$') ? item.key : `$.${item.key}`;
+        results[item.key] = (() => {
+          const result = JSONPath({ path: key, json: formatResponse });
+
+          // 如果结果为空,返回 undefined
+          if (!result || result.length === 0) {
+            return undefined;
+          }
+
+          // 以下情况返回数组:
+          // 1. 使用通配符 *
+          // 2. 使用数组切片 [start:end]
+          // 3. 使用过滤表达式 [?(...)]
+          // 4. 使用递归下降 ..
+          // 5. 使用多个结果运算符 ,
+          const needArrayResult = /[*]|[\[][:?]|\.\.|\,/.test(key);
+
+          return needArrayResult ? result : result[0];
+        })();
+      });
 
     if (typeof formatResponse[NodeOutputKeyEnum.answerText] === 'string') {
       workflowStreamResponse?.({
@@ -238,6 +272,7 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
     }
 
     return {
+      ...results,
       [DispatchNodeResponseKeyEnum.nodeResponse]: {
         totalPoints: 0,
         params: Object.keys(params).length > 0 ? params : undefined,
@@ -247,8 +282,7 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
       },
       [DispatchNodeResponseKeyEnum.toolResponses]:
         Object.keys(results).length > 0 ? results : rawResponse,
-      [NodeOutputKeyEnum.httpRawResponse]: rawResponse,
-      ...results
+      [NodeOutputKeyEnum.httpRawResponse]: rawResponse
     };
   } catch (error) {
     addLog.error('Http request error', error);
@@ -293,80 +327,8 @@ async function fetchData({
     data: ['POST', 'PUT', 'PATCH'].includes(method) ? body : undefined
   });
 
-  /*
-    parse the json:
-    {
-      user: {
-        name: 'xxx',
-        age: 12
-      },
-      list: [
-        {
-          name: 'xxx',
-          age: 50
-        },
-        [{ test: 22 }]
-      ],
-      psw: 'xxx'
-    }
-
-    result: {
-      'user': { name: 'xxx', age: 12 },
-      'user.name': 'xxx',
-      'user.age': 12,
-      'list': [ { name: 'xxx', age: 50 }, [ [Object] ] ],
-      'list[0]': { name: 'xxx', age: 50 },
-      'list[0].name': 'xxx',
-      'list[0].age': 50,
-      'list[1]': [ { test: 22 } ],
-      'list[1][0]': { test: 22 },
-      'list[1][0].test': 22,
-      'psw': 'xxx'
-    }
-  */
-  const parseJson = (obj: Record<string, any>, prefix = '') => {
-    let result: Record<string, any> = {};
-
-    if (Array.isArray(obj)) {
-      for (let i = 0; i < obj.length; i++) {
-        result[`${prefix}[${i}]`] = obj[i];
-
-        if (Array.isArray(obj[i])) {
-          result = {
-            ...result,
-            ...parseJson(obj[i], `${prefix}[${i}]`)
-          };
-        } else if (typeof obj[i] === 'object') {
-          result = {
-            ...result,
-            ...parseJson(obj[i], `${prefix}[${i}].`)
-          };
-        }
-      }
-    } else if (typeof obj == 'object') {
-      for (const key in obj) {
-        result[`${prefix}${key}`] = obj[key];
-
-        if (Array.isArray(obj[key])) {
-          result = {
-            ...result,
-            ...parseJson(obj[key], `${prefix}${key}`)
-          };
-        } else if (typeof obj[key] === 'object') {
-          result = {
-            ...result,
-            ...parseJson(obj[key], `${prefix}${key}.`)
-          };
-        }
-      }
-    }
-
-    return result;
-  };
-
   return {
-    formatResponse:
-      typeof response === 'object' && !Array.isArray(response) ? parseJson(response) : {},
+    formatResponse: typeof response === 'object' ? response : {},
     rawResponse: response
   };
 }
@@ -404,4 +366,39 @@ function removeUndefinedSign(obj: Record<string, any>) {
     }
   }
   return obj;
+}
+
+// Replace some special response from system plugin
+async function replaceSystemPluginResponse({
+  response,
+  teamId,
+  tmbId
+}: {
+  response: Record<string, any>;
+  teamId: string;
+  tmbId: string;
+}) {
+  for await (const key of Object.keys(response)) {
+    if (typeof response[key] === 'object' && response[key].type === 'SYSTEM_PLUGIN_BASE64') {
+      const fileObj = response[key] as SystemPluginSpecialResponse;
+      const filename = `${tmbId}-${Date.now()}.${fileObj.extension}`;
+      try {
+        const fileId = await uploadFileFromBase64Img({
+          teamId,
+          tmbId,
+          bucketName: 'chat',
+          base64: fileObj.value,
+          filename,
+          metadata: {}
+        });
+        response[key] = `${ReadFileBaseUrl}/${filename}?token=${await createFileToken({
+          bucketName: 'chat',
+          teamId,
+          uid: tmbId,
+          fileId
+        })}`;
+      } catch (error) {}
+    }
+  }
+  return response;
 }

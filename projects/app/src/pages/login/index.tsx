@@ -15,7 +15,7 @@ import { useSystemStore } from '@/web/common/system/useSystemStore';
 import type { ResLogin } from '@/global/support/api/userRes.d';
 import { useRouter } from 'next/router';
 import { useUserStore } from '@/web/support/user/useUserStore';
-import { useChatStore } from '@/web/core/chat/context/storeChat';
+import { useChatStore } from '@/web/core/chat/context/useChatStore';
 import LoginForm from './components/LoginForm/LoginForm';
 import dynamic from 'next/dynamic';
 import { serviceSideProps } from '@/web/common/utils/i18n';
@@ -27,6 +27,8 @@ import { useTranslation } from 'next-i18next';
 import I18nLngSelector from '@/components/Select/I18nLngSelector';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
 import { GET } from '@/web/common/api/request';
+import { getDocPath } from '@/web/common/system/doc';
+import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
 
 const RegisterForm = dynamic(() => import('./components/RegisterForm'));
 const ForgetPasswordForm = dynamic(() => import('./components/ForgetPasswordForm'));
@@ -42,32 +44,28 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
   const { feConfigs } = useSystemStore();
   const [pageType, setPageType] = useState<`${LoginPageTypeEnum}`>();
   const { setUserInfo } = useUserStore();
-  const { setLastChatId, setLastChatAppId } = useChatStore();
+  const { setLastChatAppId } = useChatStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isPc } = useSystem();
-  const {
-    isOpen: isOpenRedirect,
-    onOpen: onOpenRedirect,
-    onClose: onCloseRedirect
-  } = useDisclosure();
 
-  const [showRedirect, setShowRedirect] = useLocalStorageState<boolean>('showRedirect', {
-    defaultValue: true
-  });
+  const {
+    isOpen: isOpenCookiesDrawer,
+    onOpen: onOpenCookiesDrawer,
+    onClose: onCloseCookiesDrawer
+  } = useDisclosure();
+  const cookieVersion = '1';
+  const [localCookieVersion, setLocalCookieVersion] =
+    useLocalStorageState<string>('localCookieVersion');
 
   const loginSuccess = useCallback(
     (res: ResLogin) => {
-      // init store
-      setLastChatId('');
-      setLastChatAppId('');
-
       setUserInfo(res.user);
       setToken(res.token);
       setTimeout(() => {
         router.push(lastRoute ? decodeURIComponent(lastRoute) : '/app/list');
       }, 300);
     },
-    [lastRoute, router, setLastChatId, setLastChatAppId, setUserInfo]
+    [lastRoute, router, setUserInfo]
   );
 
   function DynamicComponent({ type }: { type: `${LoginPageTypeEnum}` }) {
@@ -85,11 +83,27 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
 
   /* default login type */
   useEffect(() => {
+    const bd_vid = sessionStorage.getItem('bd_vid');
+    if (bd_vid) {
+      setPageType(LoginPageTypeEnum.passwordLogin);
+      return;
+    }
     setPageType(
       feConfigs?.oauth?.wechat ? LoginPageTypeEnum.wechat : LoginPageTypeEnum.passwordLogin
     );
+
+    // init store
+    setLastChatAppId('');
   }, [feConfigs.oauth]);
 
+  const {
+    isOpen: isOpenRedirect,
+    onOpen: onOpenRedirect,
+    onClose: onCloseRedirect
+  } = useDisclosure();
+  const [showRedirect, setShowRedirect] = useLocalStorageState<boolean>('showRedirect', {
+    defaultValue: true
+  });
   const checkIpInChina = useCallback(async () => {
     try {
       const res = await GET<any>(ipDetectURL);
@@ -107,10 +121,13 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       console.log(error);
     }
   }, [onOpenRedirect]);
+
   useMount(() => {
     clearToken();
     router.prefetch('/app/list');
+
     ChineseRedirectUrl && showRedirect && checkIpInChina();
+    localCookieVersion !== cookieVersion && onOpenCookiesDrawer();
   });
 
   return (
@@ -124,11 +141,10 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       <Flex
         alignItems={'center'}
         justifyContent={'center'}
-        bg={`url('/icon/login-bg.svg') no-repeat`}
+        bg={`url(${getWebReqUrl('/icon/login-bg.svg')}) no-repeat`}
         backgroundSize={'cover'}
         userSelect={'none'}
         h={'100%'}
-        px={[0, '10vw']}
       >
         {isPc && (
           <Box position={'absolute'} top={'24px'} right={'50px'}>
@@ -137,16 +153,15 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
         )}
         <Flex
           flexDirection={'column'}
-          w={['100%', 'auto']}
-          h={['100%', '700px']}
-          maxH={['100%', '90vh']}
+          w={['100%', '556px']}
+          h={['100%', '677px']}
           bg={'white'}
           px={['5vw', '88px']}
-          py={'5vh'}
-          borderRadius={[0, '24px']}
+          py={['5vh', '64px']}
+          borderRadius={[0, '16px']}
           boxShadow={[
             '',
-            '0px 0px 1px 0px rgba(19, 51, 107, 0.20), 0px 32px 64px -12px rgba(19, 51, 107, 0.20)'
+            '0px 32px 64px -12px rgba(19, 51, 107, 0.20), 0px 0px 1px 0px rgba(19, 51, 107, 0.20)'
           ]}
         >
           <Box w={['100%', '380px']} flex={'1 0 0'}>
@@ -162,6 +177,8 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
             <Box
               mt={8}
               color={'primary.700'}
+              fontSize={'mini'}
+              fontWeight={'medium'}
               cursor={'pointer'}
               textAlign={'center'}
               onClick={onOpen}
@@ -180,6 +197,15 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
           onClose={onCloseRedirect}
           onRedirect={() => router.push(ChineseRedirectUrl)}
           disableDrawer={() => setShowRedirect(false)}
+        />
+      )}
+      {isOpenCookiesDrawer && (
+        <CookiesDrawer
+          onAgree={() => {
+            setLocalCookieVersion(cookieVersion);
+            onCloseCookiesDrawer();
+          }}
+          onClose={onCloseCookiesDrawer}
         />
       )}
     </>
@@ -221,6 +247,40 @@ function RedirectDrawer({
           </Box>
           <Button ml={'0.75rem'} onClick={onRedirect}>
             {t('login:redirect')}
+          </Button>
+        </Flex>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function CookiesDrawer({ onClose, onAgree }: { onClose: () => void; onAgree: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <Drawer placement="bottom" size={'xs'} isOpen={true} onClose={onClose}>
+      <DrawerOverlay backgroundColor={'rgba(0,0,0,0.2)'} />
+      <DrawerContent py={'1.75rem'} px={'3rem'}>
+        <DrawerCloseButton size={'sm'} />
+        <Flex align={'center'} justify={'space-between'}>
+          <Box>
+            <Box color={'myGray.900'} fontWeight={'500'} fontSize={'1rem'}>
+              {t('login:cookies_tip')}
+            </Box>
+            <Box
+              color={'primary.700'}
+              fontWeight={'500'}
+              fontSize={'1rem'}
+              textDecorationLine={'underline'}
+              cursor={'pointer'}
+              w={'fit-content'}
+              onClick={() => window.open(getDocPath('/docs/agreement/privacy/'), '_blank')}
+            >
+              {t('login:privacy_policy')}
+            </Box>
+          </Box>
+          <Button ml={'0.75rem'} onClick={onAgree}>
+            {t('login:agree')}
           </Button>
         </Flex>
       </DrawerContent>

@@ -22,22 +22,11 @@ weight: 853
 **新例子**
 
 ```bash
-curl --location --request POST 'https://api.fastgpt.in/api/support/wallet/usage/createTrainingUsage' \
+curl --location --request POST 'http://localhost:3000/api/support/wallet/usage/createTrainingUsage' \
 --header 'Authorization: Bearer {{apikey}}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "datasetId": "知识库 ID",
-    "name": "可选，自定义订单名称，例如：文档训练-fastgpt.docx"
-}'
-```
-
-**x例子**
-
-```bash
-curl --location --request POST 'https://api.fastgpt.in/api/support/wallet/bill/createTrainingBill' \
---header 'Authorization: Bearer {{apikey}}' \
---header 'Content-Type: application/json' \
---data-raw '{
     "name": "可选，自定义订单名称，例如：文档训练-fastgpt.docx"
 }'
 ```

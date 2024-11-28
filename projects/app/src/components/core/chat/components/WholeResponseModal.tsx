@@ -32,11 +32,11 @@ type sideTabItemType = {
 export const WholeResponseContent = ({
   activeModule,
   hideTabs,
-  showDetail
+  dataId
 }: {
   activeModule: ChatHistoryItemResType;
   hideTabs?: boolean;
-  showDetail: boolean;
+  dataId?: string;
 }) => {
   const { t } = useTranslation();
 
@@ -140,6 +140,12 @@ export const WholeResponseContent = ({
             value={formatNumber(activeModule.totalPoints)}
           />
         )}
+        {activeModule?.childTotalPoints !== undefined && (
+          <Row
+            label={t('chat:response.child total points')}
+            value={formatNumber(activeModule.childTotalPoints)}
+          />
+        )}
         <Row
           label={t('common:core.chat.response.module time')}
           value={`${activeModule?.runningTime || 0}s`}
@@ -227,9 +233,20 @@ export const WholeResponseContent = ({
         {activeModule.quoteList && activeModule.quoteList.length > 0 && (
           <Row
             label={t('common:core.chat.response.module quoteList')}
-            rawDom={<QuoteList showDetail={showDetail} rawSearch={activeModule.quoteList} />}
+            rawDom={
+              <QuoteList
+                canEditDataset
+                canViewSource
+                chatItemId={dataId}
+                rawSearch={activeModule.quoteList}
+              />
+            }
           />
         )}
+      </>
+      {/* dataset concat */}
+      <>
+        <Row label={t('chat:response.dataset_concat_length')} value={activeModule?.concatLength} />
       </>
       {/* classify question */}
       <>
@@ -521,12 +538,12 @@ const SideTabItem = ({
 /* Modal main container */
 export const ResponseBox = React.memo(function ResponseBox({
   response,
-  showDetail,
+  dataId,
   hideTabs = false,
   useMobile = false
 }: {
   response: ChatHistoryItemResType[];
-  showDetail: boolean;
+  dataId?: string;
   hideTabs?: boolean;
   useMobile?: boolean;
 }) {
@@ -649,11 +666,7 @@ export const ResponseBox = React.memo(function ResponseBox({
             </Box>
           </Box>
           <Box flex={'5 0 0'} w={0} height={'100%'}>
-            <WholeResponseContent
-              activeModule={activeModule}
-              hideTabs={hideTabs}
-              showDetail={showDetail}
-            />
+            <WholeResponseContent dataId={dataId} activeModule={activeModule} hideTabs={hideTabs} />
           </Box>
         </Flex>
       ) : (
@@ -714,9 +727,9 @@ export const ResponseBox = React.memo(function ResponseBox({
               </Flex>
               <Box flex={'1 0 0'}>
                 <WholeResponseContent
+                  dataId={dataId}
                   activeModule={activeModule}
                   hideTabs={hideTabs}
-                  showDetail={showDetail}
                 />
               </Box>
             </Flex>
@@ -727,15 +740,7 @@ export const ResponseBox = React.memo(function ResponseBox({
   );
 });
 
-const WholeResponseModal = ({
-  showDetail,
-  onClose,
-  dataId
-}: {
-  showDetail: boolean;
-  onClose: () => void;
-  dataId: string;
-}) => {
+const WholeResponseModal = ({ onClose, dataId }: { onClose: () => void; dataId: string }) => {
   const { t } = useTranslation();
 
   const { getHistoryResponseData } = useContextSelector(ChatBoxContext, (v) => v);
@@ -764,7 +769,7 @@ const WholeResponseModal = ({
       }
     >
       {!!response?.length ? (
-        <ResponseBox response={response} showDetail={showDetail} />
+        <ResponseBox response={response} dataId={dataId} />
       ) : (
         <EmptyTip text={t('chat:no_workflow_response')} />
       )}

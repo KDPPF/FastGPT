@@ -10,9 +10,9 @@ import { SelectedDatasetType } from '../workflow/api';
 import { DatasetSearchModeEnum } from '../dataset/constants';
 import { TeamTagSchema as TeamTagsSchemaType } from '@fastgpt/global/support/user/team/type.d';
 import { StoreEdgeItemType } from '../workflow/type/edge';
-import { PermissionSchemaType, PermissionValueType } from '../../support/permission/type';
 import { AppPermission } from '../../support/permission/app/controller';
 import { ParentIdType } from '../../common/parentFolder/type';
+import { FlowNodeInputTypeEnum } from 'core/workflow/node/constant';
 
 export type AppSchema = {
   _id: string;
@@ -44,7 +44,11 @@ export type AppSchema = {
 
   inited?: boolean;
   teamTags: string[];
-} & PermissionSchemaType;
+  inheritPermission?: boolean;
+
+  // abandon
+  defaultPermission?: number;
+};
 
 export type AppListItemType = {
   _id: string;
@@ -56,7 +60,9 @@ export type AppListItemType = {
   updateTime: Date;
   pluginData?: AppSchema['pluginData'];
   permission: AppPermission;
-} & PermissionSchemaType;
+  inheritPermission?: boolean;
+  private?: boolean;
+};
 
 export type AppDetailType = AppSchema & {
   permission: AppPermission;
@@ -90,6 +96,7 @@ export type AppSimpleEditFormType = {
 export type AppChatConfigType = {
   welcomeText?: string;
   variables?: VariableItemType[];
+  autoExecute?: AppAutoExecuteConfigType;
   questionGuide?: boolean;
   ttsConfig?: AppTTSConfigType;
   whisperConfig?: AppWhisperConfigType;
@@ -114,11 +121,19 @@ export type VariableItemType = {
   id: string;
   key: string;
   label: string;
-  type: `${VariableInputEnum}`;
+  type: VariableInputEnum;
   required: boolean;
-  maxLen: number;
-  enums: { value: string }[];
-  valueType: WorkflowIOValueTypeEnum;
+  description: string;
+  valueType?: WorkflowIOValueTypeEnum;
+  defaultValue?: any;
+
+  // input
+  maxLength?: number;
+  // numberInput
+  max?: number;
+  min?: number;
+  // select
+  enums?: { value: string; label: string }[];
 };
 // tts
 export type AppTTSConfigType = {
@@ -142,6 +157,11 @@ export type ChatInputGuideConfigType = {
 export type AppScheduledTriggerConfigType = {
   cronString: string;
   timezone: string;
+  defaultPrompt: string;
+};
+// auto execute
+export type AppAutoExecuteConfigType = {
+  open: boolean;
   defaultPrompt: string;
 };
 // File

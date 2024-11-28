@@ -17,8 +17,8 @@ const RenderList: {
     Component: dynamic(() => import('./templates/Reference'))
   },
   {
-    types: [FlowNodeInputTypeEnum.input],
-    Component: dynamic(() => import('./templates/TextInput'))
+    types: [FlowNodeInputTypeEnum.fileSelect],
+    Component: dynamic(() => import('./templates/Reference'))
   },
   {
     types: [FlowNodeInputTypeEnum.select],
@@ -31,10 +31,6 @@ const RenderList: {
   {
     types: [FlowNodeInputTypeEnum.switch],
     Component: dynamic(() => import('./templates/Switch'))
-  },
-  {
-    types: [FlowNodeInputTypeEnum.textarea],
-    Component: dynamic(() => import('./templates/Textarea'))
   },
   {
     types: [FlowNodeInputTypeEnum.selectApp],
@@ -67,6 +63,14 @@ const RenderList: {
   {
     types: [FlowNodeInputTypeEnum.settingDatasetQuotePrompt],
     Component: dynamic(() => import('./templates/SettingQuotePrompt'))
+  },
+  {
+    types: [FlowNodeInputTypeEnum.input],
+    Component: dynamic(() => import('./templates/TextInput'))
+  },
+  {
+    types: [FlowNodeInputTypeEnum.textarea],
+    Component: dynamic(() => import('./templates/Textarea'))
   }
 ];
 
@@ -81,54 +85,45 @@ type Props = {
 const RenderInput = ({ flowInputList, nodeId, CustomComponent, mb = 5 }: Props) => {
   const { feConfigs } = useSystemStore();
 
-  const copyInputs = useMemo(
-    () =>
-      JSON.stringify(
-        flowInputList.filter((input) => {
-          if (input.isPro && !feConfigs?.isPlus) return false;
-          return true;
-        })
-      ),
-    [feConfigs?.isPlus, flowInputList]
-  );
   const filterInputs = useMemo(() => {
-    return JSON.parse(copyInputs) as FlowNodeInputItemType[];
-  }, [copyInputs]);
-
-  const memoCustomComponent = useMemo(() => CustomComponent || {}, [CustomComponent]);
-
-  const Render = useMemo(() => {
-    return filterInputs.map((input) => {
-      const renderType = input.renderTypeList?.[input.selectedTypeIndex || 0];
-      const isDynamic = !!input.canEdit;
-
-      const RenderComponent = (() => {
-        if (renderType === FlowNodeInputTypeEnum.custom && memoCustomComponent[input.key]) {
-          return <>{memoCustomComponent[input.key]({ ...input })}</>;
-        }
-
-        const Component = RenderList.find((item) => item.types.includes(renderType))?.Component;
-
-        if (!Component) return null;
-        return <Component inputs={filterInputs} item={input} nodeId={nodeId} />;
-      })();
-
-      return renderType !== FlowNodeInputTypeEnum.hidden && !isDynamic ? (
-        <Box key={input.key} _notLast={{ mb }} position={'relative'}>
-          {!!input.label && !hideLabelTypeList.includes(renderType) && (
-            <InputLabel nodeId={nodeId} input={input} />
-          )}
-          {!!RenderComponent && (
-            <Box mt={2} className={'nodrag'}>
-              {RenderComponent}
-            </Box>
-          )}
-        </Box>
-      ) : null;
+    return flowInputList.filter((input) => {
+      if (input.isPro && !feConfigs?.isPlus) return false;
+      return true;
     });
-  }, [filterInputs, mb, memoCustomComponent, nodeId]);
+  }, [feConfigs?.isPlus, flowInputList]);
 
-  return <>{Render}</>;
+  return (
+    <>
+      {filterInputs.map((input) => {
+        const renderType = input.renderTypeList?.[input.selectedTypeIndex || 0];
+        const isDynamic = !!input.canEdit;
+
+        const RenderComponent = (() => {
+          if (renderType === FlowNodeInputTypeEnum.custom && CustomComponent?.[input.key]) {
+            return <>{CustomComponent?.[input.key]({ ...input })}</>;
+          }
+
+          const Component = RenderList.find((item) => item.types.includes(renderType))?.Component;
+
+          if (!Component) return null;
+          return <Component inputs={filterInputs} item={input} nodeId={nodeId} />;
+        })();
+
+        return renderType !== FlowNodeInputTypeEnum.hidden && !isDynamic ? (
+          <Box key={input.key} _notLast={{ mb }} position={'relative'}>
+            {!!input.label && !hideLabelTypeList.includes(renderType) && (
+              <InputLabel nodeId={nodeId} input={input} />
+            )}
+            {!!RenderComponent && (
+              <Box mt={2} className={'nodrag'}>
+                {RenderComponent}
+              </Box>
+            )}
+          </Box>
+        ) : null;
+      })}
+    </>
+  );
 };
 
 export default React.memo(RenderInput);
