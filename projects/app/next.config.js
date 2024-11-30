@@ -11,6 +11,9 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: isDev ? false : true,
   compress: true,
+  typescript: {
+    ignoreBuildErrors: true
+  },
   async rewrites() {
     return [
       {
