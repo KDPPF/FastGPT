@@ -2,7 +2,6 @@ import type { NextApiRequest } from 'next';
 import { MongoDataset } from '@fastgpt/service/core/dataset/schema';
 import { getVectorModel } from '@fastgpt/service/core/ai/model';
 import type { DatasetSimpleItemType } from '@fastgpt/global/core/dataset/type.d';
-import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constants';
 import { NextAPI } from '@/service/middleware/entry';
 import {
   PerResourceTypeEnum,
@@ -11,13 +10,16 @@ import {
 import { MongoResourcePermission } from '@fastgpt/service/support/permission/schema';
 import { DatasetPermission } from '@fastgpt/global/support/permission/dataset/controller';
 import { authUserPer } from '@fastgpt/service/support/permission/user/auth';
+import { DatasetDefaultPermissionVal } from '@fastgpt/global/support/permission/dataset/constant';
+import { getGroupsByTmbId } from '@fastgpt/service/support/permission/memberGroup/controllers';
+import { getGroupPer } from '@fastgpt/service/support/permission/controller';
 
 /* get all dataset by teamId or tmbId */
 async function handler(req: NextApiRequest): Promise<DatasetSimpleItemType[]> {
   const {
     teamId,
     tmbId,
-    permission: tmbPer
+    permission: myPer
   } = await authUserPer({
     req,
     authToken: true,
@@ -25,7 +27,14 @@ async function handler(req: NextApiRequest): Promise<DatasetSimpleItemType[]> {
     per: ReadPermissionVal
   });
 
-  const [myDatasets, rpList] = await Promise.all([
+  const myGroupIds = (
+    await getGroupsByTmbId({
+      tmbId,
+      teamId
+    })
+  ).map((item) => String(item._id));
+
+  const [myDatasets, perList] = await Promise.all([
     MongoDataset.find({
       teamId
     })
@@ -36,43 +45,53 @@ async function handler(req: NextApiRequest): Promise<DatasetSimpleItemType[]> {
     MongoResourcePermission.find({
       resourceType: PerResourceTypeEnum.dataset,
       teamId,
-      tmbId
+      resourceId: {
+        $exists: true
+      }
     }).lean()
   ]);
 
   const filterDatasets = myDatasets
     .map((dataset) => {
-      const perVal = (() => {
-        const perVal = rpList.find(
-          (item) => String(item.resourceId) === String(dataset._id)
-        )?.permission;
-        if (perVal) {
-          return perVal;
-        }
+      const per = (() => {
+        const myPerList = perList.filter(
+          (item) =>
+            String(item.tmbId) === String(tmbId) || myGroupIds.includes(String(item.groupId))
+        );
 
-        if (dataset.inheritPermission && dataset.parentId) {
-          const parentDataset = myDatasets.find(
-            (item) => String(item._id) === String(dataset.parentId)
+        const getPer = (id: string) => {
+          const tmbPer = myPerList.find(
+            (item) => String(item.resourceId) === id && !!item.tmbId
+          )?.permission;
+          const groupPer = getGroupPer(
+            myPerList
+              .filter(
+                (item) =>
+                  String(item.resourceId) === id && myGroupIds.includes(String(item.groupId))
+              )
+              .map((item) => item.permission)
           );
-          if (parentDataset) {
-            const parentPerVal =
-              rpList.find((item) => String(item.resourceId) === String(parentDataset._id))
-                ?.permission ?? parentDataset.defaultPermission;
-            if (parentPerVal) {
-              return parentPerVal;
-            }
-          }
+
+          return new DatasetPermission({
+            per: tmbPer ?? groupPer ?? DatasetDefaultPermissionVal,
+            isOwner: String(dataset.tmbId) === String(tmbId) || myPer.isOwner
+          });
+        };
+
+        const parentDataset = myDatasets.find(
+          (item) => String(item._id) === String(dataset.parentId)
+        );
+
+        if (dataset.inheritPermission && dataset.parentId && parentDataset) {
+          return getPer(parentDataset._id);
+        } else {
+          return getPer(dataset._id);
         }
       })();
 
-      const Per = new DatasetPermission({
-        per: perVal ?? dataset.defaultPermission,
-        isOwner: String(dataset.tmbId) === tmbId || tmbPer.isOwner
-      });
-
       return {
         ...dataset,
-        permission: Per
+        permission: per
       };
     })
     .filter((app) => app.permission.hasReadPer);
