@@ -4,7 +4,7 @@ description: 'FastGPT 配置参数介绍'
 icon: 'settings'
 draft: false
 toc: true
-weight: 708
+weight: 707
 ---
 
 由于环境变量不利于配置复杂的内容，新版 FastGPT 采用了 ConfigMap 的形式挂载配置文件，你可以在 `projects/app/data/config.json` 看到默认的配置文件。可以参考 [docker-compose 快速部署](/docs/development/docker/) 来挂载配置文件。
@@ -97,7 +97,9 @@ weight: 708
       "customExtractPrompt": "",
       "defaultSystemChatPrompt": "",
       "defaultConfig": {
-        "temperature": 1
+        "temperature": 1,
+        "max_tokens": null,
+        "stream": false
       }
     },
     {
@@ -122,7 +124,9 @@ weight: 708
       "customExtractPrompt": "",
       "defaultSystemChatPrompt": "",
       "defaultConfig": {
-        "temperature": 1
+         "temperature": 1,
+        "max_tokens": null,
+        "stream": false
       }
     }
   ],
@@ -164,6 +168,7 @@ weight: 708
   "reRankModels": [],
   "audioSpeechModels": [
     {
+      "provider": "OpenAI",
       "model": "tts-1",
       "name": "OpenAI TTS1",
       "charsPointsPrice": 0,
@@ -178,6 +183,7 @@ weight: 708
     }
   ],
   "whisperModel": {
+    "provider": "OpenAI",
     "model": "whisper-1",
     "name": "Whisper1",
     "charsPointsPrice": 0
@@ -185,7 +191,7 @@ weight: 708
 }
 ```
 
-## 模型提供商
+##  内置的模型提供商ID
 
 为了方便模型分类展示，FastGPT 内置了部分模型提供商的名字和 Logo。如果你期望补充提供商，可[提交 Issue](https://github.com/labring/FastGPT/issues)，并提供几个信息：
 
@@ -197,7 +203,9 @@ weight: 708
 - OpenAI
 - Claude
 - Gemini
+- Meta
 - MistralAI
+- AliCloud - 阿里云
 - Qwen - 通义千问
 - Doubao - 豆包
 - ChatGLM - 智谱
@@ -209,39 +217,23 @@ weight: 708
 - Baichuan - 百川
 - Yi - 零一万物
 - Ernie - 文心一言
+- StepFun - 阶跃星辰
 - Ollama
+- BAAI - 智源研究院
+- FishAudio
 - Other - 其他
 
 
-## 特殊模型
+## ReRank 模型接入
 
-### ReRank 接入(私有部署)
+由于 OneAPI 不支持 Rerank 模型，所以需要单独配置接入，这里
 
-请使用 4.6.6-alpha 以上版本，配置文件中的 `reRankModels` 为重排模型，虽然是数组，不过目前仅有第1个生效。
 
-1. [部署 ReRank 模型](/docs/development/custom-models/bge-rerank/)
-1. 找到 FastGPT 的配置文件中的 `reRankModels`， 4.6.6 以前是 `ReRankModels`。
-2. 修改对应的值：
-
-```json
-{
-    "reRankModels": [
-        {
-            "model": "bge-reranker-base", // 随意
-            "name": "检索重排-base", // 随意
-            "charsPointsPrice": 0,
-            "requestUrl": "{{host}}/v1/rerank",
-            "requestAuth": "安全凭证，已自动补 Bearer"
-        }
-    ]
-}
-```
-
-### ReRank 接入（硅基流动）
+### 使用硅基流动的在线模型
 
 有免费的 `bge-reranker-v2-m3` 模型可以使用。
 
-1. 注册硅基流动账号: https://siliconflow.cn/
+1. [点击注册硅基流动账号](https://cloud.siliconflow.cn/i/TR9Ym0c4)
 2. 进入控制台，获取 API key: https://cloud.siliconflow.cn/account/ak
 3. 修改 FastGPT 配置文件
 
@@ -258,21 +250,23 @@ weight: 708
 }
 ```
 
-### ReRank 接入（Cohere）
+### 私有部署模型
 
-这个重排模型对中文不是很好，不如 bge 的好用。
+请使用 4.6.6-alpha 以上版本，配置文件中的 `reRankModels` 为重排模型，虽然是数组，不过目前仅有第1个生效。
 
-1. 申请 Cohere 官方 Key: https://dashboard.cohere.com/api-keys
-2. 修改 FastGPT 配置文件
+1. [部署 ReRank 模型](/docs/development/custom-models/bge-rerank/)
+1. 找到 FastGPT 的配置文件中的 `reRankModels`， 4.6.6 以前是 `ReRankModels`。
+2. 修改对应的值：
 
 ```json
 {
     "reRankModels": [
         {
-            "model": "rerank-multilingual-v2.0", // 这里的model需要对应 cohere 的模型名
-            "name": "rerank-multilingual-v2.0",
-            "requestUrl": "https://api.cohere.ai/v1/rerank",
-            "requestAuth": "Coherer上申请的key"
+            "model": "bge-reranker-base", // 随意
+            "name": "检索重排-base", // 随意
+            "charsPointsPrice": 0,
+            "requestUrl": "{{host}}/v1/rerank",
+            "requestAuth": "安全凭证，已自动补 Bearer"
         }
     ]
 }

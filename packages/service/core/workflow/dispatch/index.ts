@@ -72,6 +72,7 @@ import { dispatchLoopEnd } from './loop/runLoopEnd';
 import { dispatchLoopStart } from './loop/runLoopStart';
 import { dispatchFormInput } from './interactive/formInput';
 import { dispatchToolParams } from './agent/runTool/toolParams';
+import { getErrText } from '@fastgpt/global/common/error/utils';
 
 const callbackMap: Record<FlowNodeTypeEnum, Function> = {
   [FlowNodeTypeEnum.workflowStart]: dispatchWorkflowStart,
@@ -126,7 +127,8 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
     runtimeEdges = [],
     histories = [],
     variables = {},
-    user,
+    timezone,
+    externalProvider,
     stream = false,
     ...props
   } = data;
@@ -150,7 +152,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
       [DispatchNodeResponseKeyEnum.runTimes]: 1,
       [DispatchNodeResponseKeyEnum.assistantResponses]: [],
       [DispatchNodeResponseKeyEnum.toolResponses]: null,
-      newVariables: removeSystemVariable(variables)
+      newVariables: removeSystemVariable(variables, externalProvider.externalWorkflowVariables)
     };
   }
 
@@ -180,6 +182,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
 
   variables = {
     ...getSystemVariable(data),
+    ...externalProvider.externalWorkflowVariables,
     ...variables
   };
 
@@ -229,9 +232,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
 
     if (toolResponses !== undefined) {
       if (Array.isArray(toolResponses) && toolResponses.length === 0) return;
-      if (typeof toolResponses === 'object' && Object.keys(toolResponses).length === 0) {
-        return;
-      }
+      if (typeof toolResponses === 'object' && Object.keys(toolResponses).length === 0) return;
       toolRunResponse = toolResponses;
     }
 
@@ -493,11 +494,11 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
       }
 
       // replace {{xx}} variables
-      let value = replaceVariable(input.value, variables);
+      // let value = replaceVariable(input.value, variables);
 
       // replace {{$xx.xx$}} variables
-      value = replaceEditorVariable({
-        text: value,
+      let value = replaceEditorVariable({
+        text: input.value,
         nodes: runtimeNodes,
         variables
       });
@@ -543,7 +544,8 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
       res,
       variables,
       histories,
-      user,
+      timezone,
+      externalProvider,
       stream,
       node,
       runtimeNodes,
@@ -561,6 +563,8 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
           // Get source handles of outgoing edges
           const targetEdges = runtimeEdges.filter((item) => item.source === node.nodeId);
           const skipHandleIds = targetEdges.map((item) => item.sourceHandle);
+
+          toolRunResponse = getErrText(error);
 
           // Skip all edges and return error
           return {
@@ -677,7 +681,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
       [DispatchNodeResponseKeyEnum.assistantResponses]:
         mergeAssistantResponseAnswerText(chatAssistantResponse),
       [DispatchNodeResponseKeyEnum.toolResponses]: toolRunResponse,
-      newVariables: removeSystemVariable(variables)
+      newVariables: removeSystemVariable(variables, externalProvider.externalWorkflowVariables)
     };
   } catch (error) {
     return Promise.reject(error);
@@ -686,7 +690,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
 
 /* get system variable */
 const getSystemVariable = ({
-  user,
+  timezone,
   runningAppInfo,
   chatId,
   responseChatItemId,
@@ -707,7 +711,7 @@ const getSystemVariable = ({
     chatId,
     responseChatItemId,
     histories,
-    cTime: getSystemTime(user.timezone)
+    cTime: getSystemTime(timezone)
   };
 };
 
