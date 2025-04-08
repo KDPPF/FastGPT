@@ -27,9 +27,6 @@ FastGPT 是一个基于 LLM 大语言模型的知识库问答系统，提供开�
   <a href="/#-%E7%9B%B8%E5%85%B3%E9%A1%B9%E7%9B%AE">
     <img height="21" src="https://img.shields.io/badge/相关项目-7d09f1?style=flat-square" alt="project">
   </a>
-  <a href="https://github.com/labring/FastGPT/blob/main/LICENSE">
-    <img height="21" src="https://img.shields.io/badge/License-Apache--2.0-ffffff?style=flat-square&labelColor=d4eaf7&color=7d09f1" alt="license">
-  </a>
 </p>
 
 https://github.com/labring/FastGPT/assets/15308462/7d3a38df-eb0e-4388-9250-2409bd33f6d4
@@ -118,13 +115,18 @@ https://github.com/labring/FastGPT/assets/15308462/7d3a38df-eb0e-4388-9250-2409b
 
 ## 🏘️ 社区交流群
 
-扫码加入飞书话题群 (新开，逐渐弃用微信群)：
+扫码加入飞书话题群：
 
 ![](https://oss.laf.run/otnvvf-imgs/fastgpt-feishu1.png)
 
 <a href="#readme">
     <img src="https://img.shields.io/badge/-返回顶部-7d09f1.svg" alt="#" align="right">
 </a>
+
+## 🏘️ 加入我们
+
+我们正在寻找志同道合的小伙伴，加速 FastGPT 的发展。你可以通过 [FastGPT 2025 招聘](https://fael3z0zfze.feishu.cn/wiki/P7FOwEmPziVcaYkvVaacnVX1nvg)了解 FastGPT 的招聘信息。
+
 
 ## 💪 相关项目
 
@@ -171,7 +173,7 @@ https://github.com/labring/FastGPT/assets/15308462/7d3a38df-eb0e-4388-9250-2409b
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="https://next.ossinsight.io/widgets/official/compose-org-active-contributors/thumbnail.png?activity=active&period=past_28_days&owner_id=102226726&repo_ids=605673387&image_size=2x3&color_scheme=dark">
           <img alt="Active participants of labring - past 28 days" src="https://next.ossinsight.io/widgets/official/compose-org-active-contributors/thumbnail.png?activity=active&period=past_28_days&owner_id=102226726&repo_ids=605673387&image_size=2x3&color_scheme=light">
-        </picture>
+        </picture>****
       </td>
       <td rowspan="2">
         <picture>

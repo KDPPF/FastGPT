@@ -22,9 +22,7 @@ import { EditorVariablePickerType } from '@fastgpt/web/components/common/Textare
 import {
   formatEditorVariablePickerIcon,
   getAppChatConfig,
-  getGuideModule,
-  isValidArrayReferenceValue,
-  isValidReferenceValue
+  getGuideModule
 } from '@fastgpt/global/core/workflow/utils';
 import { TFunction } from 'next-i18next';
 import {
@@ -552,12 +550,12 @@ export const getLatestNodeTemplate = (
 export const compareSnapshot = (
   snapshot1: {
     nodes?: Node[];
-    edges: Edge<any>[] | undefined;
+    edges?: Edge<any>[] | undefined;
     chatConfig?: AppChatConfigType;
   },
   snapshot2: {
     nodes?: Node[];
-    edges: Edge<any>[];
+    edges?: Edge<any>[];
     chatConfig?: AppChatConfigType;
   }
 ) => {
@@ -565,6 +563,8 @@ export const compareSnapshot = (
   const clone2 = cloneDeep(snapshot2);
 
   if (!clone1.nodes || !clone2.nodes) return false;
+  if (!clone1.edges || !clone2.edges) return false;
+
   const formatEdge = (edges: Edge[] | undefined) => {
     if (!edges) return [];
     return edges.map((edge) => ({
@@ -619,7 +619,6 @@ export const compareSnapshot = (
     return nodes
       .filter((node) => {
         if (!node) return;
-        if (FlowNodeTypeEnum.systemConfig === node.type) return;
 
         return true;
       })
@@ -634,7 +633,8 @@ export const compareSnapshot = (
             key: input.key,
             selectedTypeIndex: input.selectedTypeIndex ?? 0,
             renderTypeLis: input.renderTypeList,
-            valueType: input.valueType,
+            // set to arrayAny for loopInputArray to skip valueType comparison
+            // valueType: input.key === NodeInputKeyEnum.loopInputArray ? 'arrayAny' : input.valueType,
             value: input.value ?? undefined
           })),
           outputs: node.data.outputs.map((item: FlowNodeOutputItemType) => ({
@@ -660,14 +660,4 @@ export const compareSnapshot = (
   });
 
   return isEqual(node1, node2);
-};
-
-// remove node size
-export const simplifyWorkflowNodes = (nodes: Node[]) => {
-  return nodes.map((node) => ({
-    id: node.id,
-    type: node.type,
-    position: node.position,
-    data: node.data
-  }));
 };

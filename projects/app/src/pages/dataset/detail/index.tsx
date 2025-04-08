@@ -25,7 +25,7 @@ const CollectionCard = dynamic(() => import('./components/CollectionCard/index')
 const QAPairsCard = dynamic(() => import('./components/QAPairsCard/index'));
 const DataCard = dynamic(() => import('./components/DataCard'));
 const Test = dynamic(() => import('./components/Test'));
-const Info = dynamic(() => import('./components/Info'));
+const Info = dynamic(() => import('./components/Info/index'));
 const Import = dynamic(() => import('./components/Import'));
 
 export enum TabEnum {

@@ -3,7 +3,6 @@ import { Box, Flex, Button, useDisclosure, Input, InputGroup } from '@chakra-ui/
 import { AddIcon } from '@chakra-ui/icons';
 import { serviceSideProps } from '@/web/common/utils/i18n';
 import { useUserStore } from '@/web/support/user/useUserStore';
-import { useI18n } from '@/web/context/I18n';
 import { useTranslation } from 'next-i18next';
 import dynamic from 'next/dynamic';
 import MyMenu from '@fastgpt/web/components/common/MyMenu';
@@ -30,6 +29,7 @@ import LightRowTabs from '@fastgpt/web/components/common/Tabs/LightRowTabs';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import TemplateMarketModal from './components/TemplateMarketModal';
+import MyImage from '@fastgpt/web/components/common/Image/MyImage';
 
 const CreateModal = dynamic(() => import('./components/CreateModal'));
 const EditFolderModal = dynamic(
@@ -40,7 +40,6 @@ const List = dynamic(() => import('./components/List'));
 
 const MyApps = () => {
   const { t } = useTranslation();
-  const { appT } = useI18n();
   const router = useRouter();
   const { isPc } = useSystem();
   const {
@@ -101,14 +100,14 @@ const MyApps = () => {
         <Input
           value={searchKey}
           onChange={(e) => setSearchKey(e.target.value)}
-          placeholder={appT('search_app')}
+          placeholder={t('app:search_app')}
           maxLength={30}
           pl={8}
           bg={'white'}
         />
       </InputGroup>
     ),
-    [searchKey, setSearchKey, appT]
+    [searchKey, setSearchKey, t]
   );
 
   return (
@@ -134,7 +133,7 @@ const MyApps = () => {
           flex={'1 0 0'}
           flexDirection={'column'}
           h={'100%'}
-          pr={folderDetail ? [3, 2] : [3, 10]}
+          pr={folderDetail ? [3, 2] : [3, 8]}
           pl={3}
           overflowY={'auto'}
           overflowX={'hidden'}
@@ -179,6 +178,33 @@ const MyApps = () => {
 
             {isPc && RenderSearchInput}
 
+            {isPc && (
+              <Flex
+                alignItems={'center'}
+                gap={1.5}
+                border={'1px solid'}
+                borderColor={'myGray.250'}
+                h={9}
+                px={4}
+                fontSize={'14px'}
+                fontWeight={'medium'}
+                bg={'white'}
+                rounded={'sm'}
+                cursor={'pointer'}
+                boxShadow={
+                  '0px 1px 2px 0px rgba(19, 51, 107, 0.05), 0px 0px 1px 0px rgba(19, 51, 107, 0.08)'
+                }
+                _hover={{
+                  bg: 'primary.50',
+                  color: 'primary.600'
+                }}
+                onClick={() => setTemplateModalType('all')}
+              >
+                <MyImage src={'/imgs/app/templateFill.svg'} w={'18px'} />
+                {t('app:template_market')}
+              </Flex>
+            )}
+
             {(folderDetail
               ? folderDetail.permission.hasWritePer && folderDetail?.type !== AppTypeEnum.httpPlugin
               : userInfo?.team.permission.hasWritePer) && (
@@ -218,16 +244,20 @@ const MyApps = () => {
                       }
                     ]
                   },
-                  {
-                    children: [
-                      {
-                        icon: '/imgs/app/templateFill.svg',
-                        label: t('app:template_market'),
-                        description: t('app:template_market_description'),
-                        onClick: () => setTemplateModalType('all')
-                      }
-                    ]
-                  },
+                  ...(isPc
+                    ? []
+                    : [
+                        {
+                          children: [
+                            {
+                              icon: '/imgs/app/templateFill.svg',
+                              label: t('app:template_market'),
+                              description: t('app:template_market_description'),
+                              onClick: () => setTemplateModalType('all')
+                            }
+                          ]
+                        }
+                      ]),
                   {
                     children: [
                       {
@@ -268,7 +298,7 @@ const MyApps = () => {
                 });
               }}
               onMove={() => setMoveAppId(folderDetail._id)}
-              deleteTip={appT('confirm_delete_folder_tip')}
+              deleteTip={t('app:confirm_delete_folder_tip')}
               onDelete={() => onDeleFolder(folderDetail._id)}
               managePer={{
                 mode: 'all',
