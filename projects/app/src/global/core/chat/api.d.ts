@@ -47,7 +47,7 @@ export type InitChatResponse = {
   appId: string;
   userAvatar?: string;
   title?: string;
-  variables: Record<string, any>;
+  variables?: Record<string, any>;
   app: {
     chatConfig?: AppChatConfigType;
     chatModels?: string[];
