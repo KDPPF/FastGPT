@@ -12,7 +12,8 @@ const staticPluginList = [
   'DingTalkWebhook',
   'WeWorkWebhook',
   'google',
-  'bing'
+  'bing',
+  'delay'
 ];
 // Run in worker thread (Have npm packages)
 const packagePluginList = [
