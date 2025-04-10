@@ -11,7 +11,7 @@ import {
 import React, { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@fastgpt/web/hooks/useToast';
-import { AppContext } from '../context';
+import { AppContext } from '@/pageComponents/app/detail/context';
 import { useContextSelector } from 'use-context-selector';
 import { QAPairsContext } from './context';
 import MyFormItem, { LABEL_POSTION_ENUM } from '@/components/MyFormItem';

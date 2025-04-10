@@ -22,8 +22,8 @@ import {
   DatasetTypeMap,
   DatasetStatusEnum
 } from '@fastgpt/global/core/dataset/constants';
-import EditFolderModal, { useEditFolder } from '../../../component/EditFolderModal';
-import { TabEnum } from '../../index';
+import EditFolderModal, { useEditFolder } from '../../EditFolderModal';
+import { TabEnum } from '@/pages/dataset/detail/index';
 import ParentPath from '@/components/common/ParentPaths';
 import dynamic from 'next/dynamic';
 

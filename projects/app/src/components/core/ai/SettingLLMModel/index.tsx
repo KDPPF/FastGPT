@@ -40,7 +40,7 @@ const SettingLLMModel = ({
     [llmModelList, llmModelType]
   );
   const defaultModel = useMemo(() => {
-    return getWebDefaultLLMModel(modelList).model;
+    return getWebDefaultLLMModel(modelList)?.model;
   }, [modelList]);
 
   // Set default model

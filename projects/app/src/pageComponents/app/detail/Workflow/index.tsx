@@ -16,7 +16,7 @@ import { useTranslation } from 'next-i18next';
 import Flow from '../WorkflowComponents/Flow';
 import { t } from 'i18next';
 
-const QAPairs = dynamic(() => import('../QAPairs'));
+const QAPairs = dynamic(() => import('@/pages/app/detail/components/QAPairs/index'));
 
 import { ReactFlowCustomProvider } from '../WorkflowComponents/context/index';
 

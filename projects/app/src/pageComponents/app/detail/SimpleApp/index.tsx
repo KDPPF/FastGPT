@@ -15,7 +15,7 @@ import { getAppConfigByDiff } from '@/web/core/app/diff';
 
 const Logs = dynamic(() => import('../Logs/index'));
 const PublishChannel = dynamic(() => import('../Publish'));
-const QAPairs = dynamic(() => import('../QAPairs'));
+const QAPairs = dynamic(() => import('@/pages/app/detail/components/QAPairs/index'));
 
 const SimpleEdit = () => {
   const { t } = useTranslation();

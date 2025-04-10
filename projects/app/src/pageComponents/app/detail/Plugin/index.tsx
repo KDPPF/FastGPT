@@ -17,7 +17,7 @@ import { useTranslation } from 'next-i18next';
 
 const Logs = dynamic(() => import('../Logs/index'));
 const PublishChannel = dynamic(() => import('../Publish'));
-const QAPairs = dynamic(() => import('../QAPairs'));
+const QAPairs = dynamic(() => import('@/pages/app/detail/components/QAPairs/index'));
 
 const WorkflowEdit = () => {
   const { appDetail, currentTab } = useContextSelector(AppContext, (e) => e);

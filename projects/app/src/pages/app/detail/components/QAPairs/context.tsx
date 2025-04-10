@@ -3,7 +3,7 @@ import { usePagination } from '@fastgpt/web/hooks/usePaginationV2';
 import { AppQAPairsListItemType } from '@/types/app';
 import { createContext, useContextSelector } from 'use-context-selector';
 import { getQAListApi } from '@/web/core/app/api/qaApi';
-import { AppContext } from '../context';
+import { AppContext } from '@/pageComponents/app/detail/context';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { UserType } from '@fastgpt/global/support/user/type';
 type QAPairsSeachModelType = {

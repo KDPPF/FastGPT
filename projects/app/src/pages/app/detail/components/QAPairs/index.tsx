@@ -24,8 +24,8 @@ import { AppQAPairsListItemType } from '@/types/app';
 import { useI18n } from '@/web/context/I18n';
 import EmptyTip from '@fastgpt/web/components/common/EmptyTip';
 import { useContextSelector } from 'use-context-selector';
-import { AppContext } from '../context';
-import { cardStyles } from '../constants';
+import { AppContext } from '@/pageComponents/app/detail/context';
+import { cardStyles } from '@/pageComponents/app/detail/constants';
 import QAPairsContextProvider, { QAPairsContext, QAPairsQASourceEnum } from './context';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 

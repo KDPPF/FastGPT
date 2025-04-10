@@ -10,7 +10,7 @@ import { getCollectionIcon } from '@fastgpt/global/core/dataset/utils';
 import {
   delDatasetCollectionTag,
   getDatasetCollectionTags,
-  getScrollCollectionList,
+  getDatasetCollections,
   getTagUsage,
   postAddTagsToCollections,
   updateDatasetCollectionTag
@@ -143,7 +143,7 @@ const TagManageModal = ({ onClose }: { onClose: () => void }) => {
     scrollDataList: collectionsList,
     ScrollList: ScrollListCollections,
     isLoading: collectionsListLoading
-  } = useVirtualScrollPagination(getScrollCollectionList, {
+  } = useVirtualScrollPagination(getDatasetCollections, {
     refreshDeps: [searchText],
 
     itemHeight: 37,
